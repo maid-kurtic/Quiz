@@ -62,7 +62,7 @@ const questionHandling = () => {
 }
 
 const timer = () => {
-    let time = 11;
+    let time = 16;
     timerInner = setInterval(() => {
         time--;
         if (time === 0) {
@@ -114,7 +114,7 @@ buttonStart.addEventListener('click', async () => {
 
 answersDiv.addEventListener('click', (e) => {
     allAnswers.forEach((e, i) => {
-        answers[i].style.pointerEvents = 'none'
+        answers[i].style.pointerEvents = 'none'     
     })
     
     clearInterval(timerInner)
@@ -125,11 +125,9 @@ answersDiv.addEventListener('click', (e) => {
     }
     else {
         e.target.style.backgroundColor = 'green'
-
     }
 
     if (index === allQuestions.length - 1) {
-
         setTimeout(() => {
         localStorage.setItem('endResult', correctAnswersResult);
         window.location.href = 'result.html';
