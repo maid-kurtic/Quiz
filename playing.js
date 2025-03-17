@@ -1,4 +1,4 @@
-let diff = document.querySelector('#diff');
+let difficulty = document.querySelector('#difficulty');
 let category = document.querySelector('#category');
 let answersDiv = document.querySelector('#answers');
 let buttonStart = document.querySelector('button');
@@ -18,7 +18,7 @@ let index = 0;
 let categoryID = 0;
 let timerInner = 0;
 
-diff.textContent = selectedDifficulty.toUpperCase()
+difficulty.textContent = selectedDifficulty.toUpperCase()
 category.textContent = selectedCategory.toUpperCase()
 questionDiv.style.display = 'none'
 answersDiv.style.pointerEvents = 'none'

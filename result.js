@@ -1,9 +1,9 @@
 let resultP = document.querySelector('#resultShow')
 let buttonNewGame = document.querySelector('#newGame')
-let correct = localStorage.getItem('endResult')
+let correctResult = localStorage.getItem('endResult')
 
 window.addEventListener('load', () => {
-    resultP.textContent = correct;
+    resultP.textContent = correctResult;
 })
 
 buttonNewGame.addEventListener('click', () => {
