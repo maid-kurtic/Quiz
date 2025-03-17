@@ -19,6 +19,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: center;
     width: 40rem; 
     background-color: rgb(255, 255, 255);
     padding: 30px;
@@ -94,6 +95,10 @@ header {
     font-size: 3rem;
     font-weight: bold;
     color: #007bff;
+    width:30rem ;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); 
+    background-color: #a78383;
+    border-radius: 10rem;
 }
 
 button {
