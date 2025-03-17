@@ -14,10 +14,11 @@ let correctAnswers = [];
 let incorrectAnswers = [];
 let allAnswers = []
 let correctAnswersResult = 5;
-let index = 0;
+let counter = 0;
 let categoryID = 0;
 let timerInner = 0;
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 difficulty.textContent = selectedDifficulty.toUpperCase()
 category.textContent = selectedCategory.toUpperCase()
 questionDiv.style.display = 'none'
@@ -36,7 +37,7 @@ const fetchQuestions = async (category, difficulty) => {
             incorrectAnswers.push(e.incorrect_answers)
         })
 
-    return { allQuestions, correctAnswers, incorrectAnswers }
+        return { allQuestions, correctAnswers, incorrectAnswers }
     }
 
     catch (err) {
@@ -44,36 +45,33 @@ const fetchQuestions = async (category, difficulty) => {
     }
 }
 
-const questionHandling = () => { 
-
-    setTimeout(() => {
-    index++;   
-    question.textContent = allQuestions[index];
-    
-    allAnswers = [correctAnswers[index], ...incorrectAnswers[index]];
+const questionHandling = async () => {
+    await wait(1000)
+    question.textContent = allQuestions[counter];
+    allAnswers = [correctAnswers[counter], ...incorrectAnswers[counter]];
     allAnswers.sort(() => Math.random() - 0.5);
-    allAnswers.forEach((e, i) => {       
+    allAnswers.forEach((e, i) => {
         answers[i].value = e;
-        answers[i].textContent = e; 
+        answers[i].textContent = e;
         answers[i].style.backgroundColor = '#007bff'
         answers[i].style.pointerEvents = 'auto'
-    });   
-},1000)
+    })
+    counter++;
 }
 
-const timer = () => {
-    let time = 16;
+const timer =  () => {
+    let time = 5;
     timerInner = setInterval(() => {
         time--;
         if (time === 0) {
             clearInterval(timerInner);
-            if (index === allQuestions.length - 1) {
+            if (counter === allQuestions.length - 1) {
                 correctAnswersResult--
                 localStorage.setItem('endResult', correctAnswersResult);
                 window.location.href = 'result.html';
             }
             else {
-                questionHandling()
+                questionHandling(counter)
                 correctAnswersResult--
                 timer()
             }
@@ -96,13 +94,7 @@ buttonStart.addEventListener('click', async () => {
 
     const { allQuestions, correctAnswers, incorrectAnswers } = await fetchQuestions(categoryID, selectedDifficulty)
 
-    allAnswers = [correctAnswers[0], ...incorrectAnswers[0]]
-    question.textContent = allQuestions[0];
-    allAnswers.sort(() => Math.random() - 0.5);    
-    allAnswers.forEach((e, i) => {
-        answers[i].value = e
-        answers[i].style.pointerEvents = 'auto'
-    })
+    await questionHandling()
 
     buttonStart.style.display = 'none'
     questionDiv.style.display = 'block'
@@ -112,13 +104,13 @@ buttonStart.addEventListener('click', async () => {
     timer()
 })
 
-answersDiv.addEventListener('click', (e) => {
+answersDiv.addEventListener('click', async (e) => {
     allAnswers.forEach((e, i) => {
-        answers[i].style.pointerEvents = 'none'     
+        answers[i].style.pointerEvents = 'none'
     })
-    
+
     clearInterval(timerInner)
-    if (!correctAnswers.includes(e.target.value) ) {
+    if (!correctAnswers.includes(e.target.value)) {
         correctAnswersResult--
         e.target.style.backgroundColor = 'red'
 
@@ -127,15 +119,14 @@ answersDiv.addEventListener('click', (e) => {
         e.target.style.backgroundColor = 'green'
     }
 
-    if (index === allQuestions.length - 1) {
-        setTimeout(() => {
+    if (counter === allQuestions.length - 1) {
+        await wait(1000)
         localStorage.setItem('endResult', correctAnswersResult);
         window.location.href = 'result.html';
-    }, 1000)
 
-    } else if (index < allQuestions.length -1) {
-        questionHandling()
 
+    } else if (counter < allQuestions.length - 1) {
+        await questionHandling()
         timer();
     }
 })
