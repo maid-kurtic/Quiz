@@ -17,6 +17,7 @@ let correctAnswersResult = 5;
 let counter = 0;
 let categoryID = 0;
 let timerInner = 0;
+let shouldStop = false;
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 difficulty.textContent = selectedDifficulty.toUpperCase()
@@ -36,6 +37,7 @@ const fetchQuestions = async (category, difficulty) => {
             correctAnswers.push(e.correct_answer)
             incorrectAnswers.push(e.incorrect_answers)
         })
+        
 
         return { allQuestions, correctAnswers, incorrectAnswers }
     }
@@ -45,7 +47,16 @@ const fetchQuestions = async (category, difficulty) => {
     }
 }
 
+const highlightCorrectAnswer = () => {
+    answers.forEach((e, i) => {
+        if (correctAnswers.includes(e.value)) {
+            answers[i].style.backgroundColor = 'green';
+        }
+    })
+}
+
 const questionHandling = async () => {
+
     await wait(1000)
     question.textContent = allQuestions[counter];
     allAnswers = [correctAnswers[counter], ...incorrectAnswers[counter]];
@@ -55,32 +66,47 @@ const questionHandling = async () => {
         answers[i].textContent = e;
         answers[i].style.backgroundColor = '#007bff'
         answers[i].style.pointerEvents = 'auto'
-    })
-    counter++;
+    });
+   counter++;
+  
 }
 
-const timer =  () => {
-    let time = 5;
-    timerInner = setInterval(() => {
-        time--;
-        if (time === 0) {
-            clearInterval(timerInner);
-            if (counter === allQuestions.length - 1) {
-                correctAnswersResult--
-                localStorage.setItem('endResult', correctAnswersResult);
-                window.location.href = 'result.html';
-            }
-            else {
-                questionHandling(counter)
-                correctAnswersResult--
-                timer()
-            }
+const clickDisable = () => {
+    allAnswers.forEach((e, i) => {
+        answers[i].style.pointerEvents = 'none'
+    })
+}
+
+const timer = async () => {
+    
+    for (let i = 5; i >= 0; i--) {
+        if (shouldStop) return;
+
+        await wait(1000);
+        timerPlace.textContent = i;
+
+        if (i === 0 && counter === allQuestions.length - 1) {
+           
+            clickDisable()
+            highlightCorrectAnswer()          
+            correctAnswersResult--;
+            localStorage.setItem('endResult', correctAnswersResult);
+            window.location.href = 'result.html';
+            
         }
-        timerPlace.textContent = time;
-    }, 1000)
+        else if (i === 0) {
+            correctAnswersResult--
+            clickDisable()
+            highlightCorrectAnswer()
+            await questionHandling()
+            await timer()
+            
+        }
+    }
 }
 
 buttonStart.addEventListener('click', async () => {
+    buttonStart.style.pointerEvents = 'none'
 
     if (selectedCategory === 'movies') {
         categoryID = 11;
@@ -92,8 +118,7 @@ buttonStart.addEventListener('click', async () => {
         categoryID = 22;
     }
 
-    const { allQuestions, correctAnswers, incorrectAnswers } = await fetchQuestions(categoryID, selectedDifficulty)
-
+    await fetchQuestions(categoryID, selectedDifficulty)
     await questionHandling()
 
     buttonStart.style.display = 'none'
@@ -101,32 +126,29 @@ buttonStart.addEventListener('click', async () => {
     timerPlace.style.display = 'block'
     container.style.backgroundImage = 'none'
 
-    timer()
+    await timer()
+
 })
 
 answersDiv.addEventListener('click', async (e) => {
-    allAnswers.forEach((e, i) => {
-        answers[i].style.pointerEvents = 'none'
-    })
-
-    clearInterval(timerInner)
+    shouldStop = true;
+    clickDisable();
     if (!correctAnswers.includes(e.target.value)) {
         correctAnswersResult--
+        highlightCorrectAnswer()
         e.target.style.backgroundColor = 'red'
-
     }
+
     else {
-        e.target.style.backgroundColor = 'green'
+        highlightCorrectAnswer()       
     }
 
-    if (counter === allQuestions.length - 1) {
-        await wait(1000)
-        localStorage.setItem('endResult', correctAnswersResult);
-        window.location.href = 'result.html';
-
-
-    } else if (counter < allQuestions.length - 1) {
-        await questionHandling()
-        timer();
+    if (counter === allQuestions.length) {
+        localStorage.setItem('endResult', correctAnswersResult)
+        await wait(1300)
+        window.location.href = 'result.html'
     }
+    await questionHandling()
+    shouldStop = false;   
+    await timer()  
 })

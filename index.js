@@ -2,12 +2,12 @@ let button = document.querySelector('#play');
 let form = document.querySelector('form');
 let radioDiv = document.querySelectorAll('.radio-div')
 let inputs = document.querySelectorAll('input')
-localStorage.clear()
 
 window.addEventListener('pageshow', () => {
     inputs.forEach(e => {
         e.checked = false;
     })
+localStorage.clear()
 })
 
 radioDiv.forEach(e => {
