@@ -9,54 +9,44 @@ let questionDiv = document.querySelector("#question-div");
 let container = document.querySelector("#container");
 let selectedDifficulty = localStorage.getItem("selectedDifficulty");
 let selectedCategories = JSON.parse(localStorage.getItem("selectedCategories"));
+let categoriesForURL;
 let allQuestions = [];
 let correctAnswers = [];
 let incorrectAnswers = [];
 let allAnswers = [];
-let correctAnswersResult = 5;
+let score = 5;
 let counter = 0;
-let categoryURL = [];
 let stopTimer = false;
-const categories = {
-  general: "general_knowledge",
-  history: "history",
-  geography: "geography",
-  movies: "film_and_tv",
-  music: "music",
-  sport: "sport_and_leisure",
-};
 
-if (selectedCategories.length > 1)
-  category.textContent =
-    ` ${selectedCategories.length} categories`.toUpperCase();
-else category.textContent = selectedCategories[0].toUpperCase();
-
-difficulty.textContent = selectedDifficulty.toUpperCase();
 questionDiv.style.display = "none";
 answersDiv.style.pointerEvents = "none";
 timerPlace.style.display = "none";
+difficulty.textContent = selectedDifficulty.toUpperCase();
+
+window.addEventListener("pageshow", () => {
+  if (selectedCategories.length > 1)
+    category.textContent = `${selectedCategories.length} categories`.toUpperCase();
+  else category.textContent = selectedCategories[0].toUpperCase();
+});
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const getCategoryIds = () => {
-  selectedCategories.forEach((e) => {
-    categoryURL.push(categories[`${e}`]);
-  });
+const getCategoriesForURL = () => {
+  categoriesForURL = selectedCategories.join();
 };
 
 const fetchQuestions = async (selectedCategories, difficulty) => {
   try {
-    getCategoryIds(selectedCategories);
+    getCategoriesForURL();
     let fetchQuestions = await fetch(
-      `https://the-trivia-api.com/v2/questions?categories=${categoryURL}&difficulties=${difficulty}&limit=5`
+      `https://the-trivia-api.com/v2/questions?categories=${categoriesForURL}&difficulties=${difficulty}&limit=5`
     );
 
     let questionsObj = await fetchQuestions.json();
-    questionsObj.forEach((e) => {
-      allQuestions.push(e.question.text);
-      correctAnswers.push(e.correctAnswer);
-      incorrectAnswers.push(e.incorrectAnswers);
-    });
+    allQuestions = questionsObj.map((q) => q.question.text);
+    correctAnswers = questionsObj.map((q) => q.correctAnswer);
+    incorrectAnswers = questionsObj.map((q) => q.incorrectAnswers);
+
     return { allQuestions, correctAnswers, incorrectAnswers };
   } catch (err) {
     alert(err.message);
@@ -64,21 +54,21 @@ const fetchQuestions = async (selectedCategories, difficulty) => {
 };
 
 const highlightCorrectAnswer = () => {
-  answers.forEach((e, i) => {
-    if (correctAnswers.includes(e.value)) {
-      answers[i].style.backgroundColor = "green";
+  answers.forEach((answer) => {
+    if (correctAnswers.includes(answer.value)) {
+      answer.style.backgroundColor = "green";
     }
   });
 };
 
-const nextQuestion = async () => {
+const handleQuestion = async () => {
   await wait(1300);
   question.textContent = allQuestions[counter];
   allAnswers = [correctAnswers[counter], ...incorrectAnswers[counter]];
-  allAnswers.sort(() => Math.random() - 0.5);
-  allAnswers.forEach((e, i) => {
-    answers[i].value = e;
-    answers[i].textContent = e;
+  allAnswers.sort(() => Math.random() - Math.random());
+  allAnswers.forEach((answer, i) => {
+    answers[i].value = answer;
+    answers[i].textContent = answer;
     answers[i].style.backgroundColor = "#007bff";
     answers[i].style.pointerEvents = "auto";
   });
@@ -86,14 +76,14 @@ const nextQuestion = async () => {
 };
 
 const toResultPage = async () => {
-  localStorage.setItem("endResult", correctAnswersResult);
+  localStorage.setItem("endResult", score);
   await wait(1300);
   window.location.href = "result.html";
 };
 
 const clickDisable = () => {
-  allAnswers.forEach((_, i) => {
-    answers[i].style.pointerEvents = "none";
+  answers.forEach((answer) => {
+    answer.style.pointerEvents = "none";
   });
 };
 
@@ -105,17 +95,16 @@ const timer = async () => {
     timerPlace.textContent = time;
 
     if (time === 0 && counter === allQuestions.length) {
-      correctAnswersResult--;
+      score--;
       clickDisable();
       highlightCorrectAnswer();
       toResultPage();
       return;
-    } 
-    else if (time === 0) {
-      correctAnswersResult--;
+    } else if (time === 0) {
+      score--;
       clickDisable();
       highlightCorrectAnswer();
-      await nextQuestion();
+      await handleQuestion();
       await timer();
     }
     time--;
@@ -124,8 +113,8 @@ const timer = async () => {
 
 buttonStart.addEventListener("click", async () => {
   buttonStart.style.pointerEvents = "none";
-  await fetchQuestions(categoryURL, selectedDifficulty);
-  await nextQuestion();
+  await fetchQuestions(categoriesForURL, selectedDifficulty);
+  await handleQuestion();
   container.style.backgroundImage = "none";
   buttonStart.style.display = "none";
   questionDiv.style.display = "block";
@@ -133,13 +122,13 @@ buttonStart.addEventListener("click", async () => {
   await timer(1000);
 });
 
-answersDiv.addEventListener("click", async (e) => {
+answersDiv.addEventListener("click", async (event) => {
   stopTimer = true;
   clickDisable();
-  if (!correctAnswers.includes(e.target.value)) {
-    correctAnswersResult--;
+  if (!correctAnswers.includes(event.target.value)) {
+    score--;
     highlightCorrectAnswer();
-    e.target.style.backgroundColor = "red";
+    event.target.style.backgroundColor = "red";
   } else {
     highlightCorrectAnswer();
   }
@@ -147,7 +136,7 @@ answersDiv.addEventListener("click", async (e) => {
     toResultPage();
     return;
   }
-  await nextQuestion();
+  await handleQuestion();
   stopTimer = false;
   await timer();
 });

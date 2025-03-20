@@ -61,7 +61,10 @@ form.addEventListener("submit", (e) => {
 });
 
 buttonPlay.addEventListener("click", () => {
-  localStorage.setItem( "selectedCategories", JSON.stringify(selectedCategoriesArr));
+  localStorage.setItem(
+    "selectedCategories",
+    JSON.stringify(selectedCategoriesArr)
+  );
   if (
     localStorage.getItem("selectedDifficulty") == null ||
     localStorage.getItem("selectedCategories") == null
