@@ -28,6 +28,15 @@ body {
   height: 50rem;
 }
 
+.select-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 35rem;
+  background-color: #80808029;
+}
+
 h1 {
   font-size: 4rem;
   margin-bottom: 1rem;
@@ -41,16 +50,58 @@ h4 {
   margin: 1.5rem;
 }
 
-.select-div {
+.category-list {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 4rem;
+  background-color: #b8d1ec;
+  width: 35rem;
+  border-bottom-right-radius: 0.3rem;
+  border-bottom-left-radius: 0.3rem;
+}
+
+.show {
+  display: flex;
+}
+
+.category-list a {
+  font-size: 1.5rem;
+  text-decoration: none;
+  position: relative;
+  padding: 0.3rem 0.7rem;
+  color: black;
+}
+.selected {
+  background-color: #007bff;
+}
+
+#dropdown-category {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.category-button {
+  width: 35rem;
+  height: 4rem;
+  font-size: 2rem;
+  border: none;
   background-color: #80808029;
-  border-radius: 0.3rem;
+  cursor: pointer;
 }
 
-button {
+.category-button:hover {
+  background-color: #80808093;
+}
+
+.error {
+  border: 0.15rem solid rgb(243, 0, 0);
+}
+
+#button-play {
   background-color: #007bff;
   color: white;
   border: none;
@@ -63,7 +114,7 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
+#button-play:hover {
   background-color: #1900ff;
 }
 
@@ -80,7 +131,7 @@ form {
 .radio-div {
   display: flex;
   justify-content: space-between;
-  width: 20em;
+  width: 30em;
   height: 3rem;
   align-items: center;
 }

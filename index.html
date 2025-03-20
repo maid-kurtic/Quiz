@@ -14,22 +14,23 @@
       <header>
         <h1>Welcom to Quiz!</h1>
       </header>
+
+
       <form action="">
         <h4>Choose category!</h4>
-        <div class="select-div">
-          <div class="radio-div">
-            <label for="22">Geography</label>
-            <input type="radio" name="category" id="22" />
-          </div>
-          <div class="radio-div">
-            <label for="12">Movies</label>
-            <input type="radio" name="category" id="12" />
-          </div>
-          <div class="radio-div">
-            <label for="11">Music</label>
-            <input type="radio" name="category" id="11" />
+
+        <div id="dropdown-category">
+          <button class ='category-button'>Select categories</button>
+          <div class="category-list" >
+            <a href="#" id="general">General Knowledge</a>
+            <a href="#" id="history">History</a>
+            <a href="#" id="geography">Geography</a>
+            <a href="#" id="movies">Movies</a>
+            <a href="#" id="music">Music</a>
+            <a href="#" id="sport">Sport</a>
           </div>
         </div>
+
         <h4>Choose difficulty!</h4>
         <div class="select-div">
           <div class="radio-div">
@@ -45,7 +46,7 @@
             <input type="radio" name="difficulty" id="hard" />
           </div>
         </div>
-        <button id="play" type="submit">Play</button>
+        <button id="button-play" type="submit">Play</button>
       </form>
     </div>
   </body>

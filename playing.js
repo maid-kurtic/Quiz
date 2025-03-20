@@ -8,40 +8,54 @@ let timerPlace = document.querySelector("#timer");
 let questionDiv = document.querySelector("#question-div");
 let container = document.querySelector("#container");
 let selectedDifficulty = localStorage.getItem("selectedDifficulty");
-let selectedCategory = localStorage.getItem("selectedCategory");
+let selectedCategories = JSON.parse(localStorage.getItem("selectedCategories"));
 let allQuestions = [];
 let correctAnswers = [];
 let incorrectAnswers = [];
 let allAnswers = [];
 let correctAnswersResult = 5;
 let counter = 0;
-let categoryID = 0;
-let shouldStop = false;
+let categoryURL = [];
+let stopTimer = false;
 const categories = {
-  Movies: "11",
-  Music: "12",
-  Geography: "22",
+  general: "general_knowledge",
+  history: "history",
+  geography: "geography",
+  movies: "film_and_tv",
+  music: "music",
+  sport: "sport_and_leisure",
 };
 
+if (selectedCategories.length > 1)
+  category.textContent =
+    ` ${selectedCategories.length} categories`.toUpperCase();
+else category.textContent = selectedCategories[0].toUpperCase();
+
 difficulty.textContent = selectedDifficulty.toUpperCase();
-category.textContent = selectedCategory.toUpperCase();
 questionDiv.style.display = "none";
 answersDiv.style.pointerEvents = "none";
 timerPlace.style.display = "none";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const fetchQuestions = async (category, difficulty) => {
-  try {
-    let fetchQuestions = await fetch(
-      `https://opentdb.com/api.php?amount=5&category=${category}&difficulty=${difficulty}&type=multiple`
-    );
-    let questionsObj = await fetchQuestions.json();
+const getCategoryIds = () => {
+  selectedCategories.forEach((e) => {
+    categoryURL.push(categories[`${e}`]);
+  });
+};
 
-    questionsObj.results.forEach((e) => {
-      allQuestions.push(e.question);
-      correctAnswers.push(e.correct_answer);
-      incorrectAnswers.push(e.incorrect_answers);
+const fetchQuestions = async (selectedCategories, difficulty) => {
+  try {
+    getCategoryIds(selectedCategories);
+    let fetchQuestions = await fetch(
+      `https://the-trivia-api.com/v2/questions?categories=${categoryURL}&difficulties=${difficulty}&limit=5`
+    );
+
+    let questionsObj = await fetchQuestions.json();
+    questionsObj.forEach((e) => {
+      allQuestions.push(e.question.text);
+      correctAnswers.push(e.correctAnswer);
+      incorrectAnswers.push(e.incorrectAnswers);
     });
     return { allQuestions, correctAnswers, incorrectAnswers };
   } catch (err) {
@@ -57,8 +71,8 @@ const highlightCorrectAnswer = () => {
   });
 };
 
-const questionHandling = async () => {
-  await wait(1500);
+const nextQuestion = async () => {
+  await wait(1300);
   question.textContent = allQuestions[counter];
   allAnswers = [correctAnswers[counter], ...incorrectAnswers[counter]];
   allAnswers.sort(() => Math.random() - 0.5);
@@ -69,12 +83,11 @@ const questionHandling = async () => {
     answers[i].style.pointerEvents = "auto";
   });
   counter++;
-  console.log("question");
 };
 
-const resultHandling = async () => {
+const toResultPage = async () => {
   localStorage.setItem("endResult", correctAnswersResult);
-  await wait(1500);
+  await wait(1300);
   window.location.href = "result.html";
 };
 
@@ -85,24 +98,24 @@ const clickDisable = () => {
 };
 
 const timer = async () => {
-  let time = 10;
+  let time = 15;
   while (time >= 0) {
-    if (shouldStop) return;
+    if (stopTimer) return;
     await wait(1000);
     timerPlace.textContent = time;
 
     if (time === 0 && counter === allQuestions.length) {
       correctAnswersResult--;
-
       clickDisable();
       highlightCorrectAnswer();
-      resultHandling();
+      toResultPage();
       return;
-    } else if (time === 0) {
+    } 
+    else if (time === 0) {
       correctAnswersResult--;
       clickDisable();
       highlightCorrectAnswer();
-      await questionHandling();
+      await nextQuestion();
       await timer();
     }
     time--;
@@ -111,22 +124,17 @@ const timer = async () => {
 
 buttonStart.addEventListener("click", async () => {
   buttonStart.style.pointerEvents = "none";
-
-  categoryID = categories[selectedCategory];
-
-  await fetchQuestions(categoryID, selectedDifficulty);
-  await questionHandling();
-
+  await fetchQuestions(categoryURL, selectedDifficulty);
+  await nextQuestion();
+  container.style.backgroundImage = "none";
   buttonStart.style.display = "none";
   questionDiv.style.display = "block";
   timerPlace.style.display = "block";
-  container.style.backgroundImage = "none";
-
-  await timer();
+  await timer(1000);
 });
 
 answersDiv.addEventListener("click", async (e) => {
-  shouldStop = true;
+  stopTimer = true;
   clickDisable();
   if (!correctAnswers.includes(e.target.value)) {
     correctAnswersResult--;
@@ -135,12 +143,11 @@ answersDiv.addEventListener("click", async (e) => {
   } else {
     highlightCorrectAnswer();
   }
-
   if (counter === allQuestions.length) {
-    resultHandling();
+    toResultPage();
     return;
   }
-  await questionHandling();
-  shouldStop = false;
+  await nextQuestion();
+  stopTimer = false;
   await timer();
 });
